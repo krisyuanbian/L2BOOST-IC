@@ -19,5 +19,5 @@ dat_tr <- dat[[1]]
 dat_te <- dat[[2]]
 
 # L2Boost Execution
-cut <- L2BOOSTCUT(dat_tr, dat_te, n, 10, tau)
-imp <- L2BOOSTIMP(dat_tr, dat_te, n, 10, tau)
+cut <- L2BOOSTCUT(dat_tr, dat_te, 10, tau)
+imp <- L2BOOSTIMP(dat_tr, dat_te, 10, tau)
