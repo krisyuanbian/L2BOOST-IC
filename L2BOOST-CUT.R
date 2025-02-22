@@ -2,7 +2,7 @@ library(icrf)
 library(survival)
 
 # Function for L2Boost with Interval Censored Random Forests using CUT
-L2BOOSTCUT <- function(dat_tr, dat_te, nn, ntree, tau, mmax = 1e5, tol = 1e-5) {
+L2BOOSTCUT <- function(dat_tr, dat_te, ntree, tau, mmax = 1e5, tol = 1e-5) {
   # Extract training and testing data
   x_tr <- dat_tr$x
   ftrue_tr <- dat_tr$mu
@@ -12,6 +12,9 @@ L2BOOSTCUT <- function(dat_tr, dat_te, nn, ntree, tau, mmax = 1e5, tol = 1e-5) {
   r_tr <- dat_tr$r
   l_te <- dat_te$l
   r_te <- dat_te$r
+  
+  n_train <- nrow(dat_tr)
+  n_test <- nrow(dat_te)
   
   # Create unique sorted time points
   t <- unique(sort(c(l_tr, r_tr, l_te, r_te)))
@@ -40,20 +43,20 @@ L2BOOSTCUT <- function(dat_tr, dat_te, nn, ntree, tau, mmax = 1e5, tol = 1e-5) {
   r.index.te <- match(r_te, t)
   
   # Initialize variables for estimating expected log survival times
-  denom.tr <- numeric(0.8 * nn)
-  egy1.tr <- numeric(0.8 * nn)
-  egy1p.tr <- numeric(0.8 * nn)
-  egy2.tr <- numeric(0.8 * nn)
-  egy2p.tr <- numeric(0.8 * nn)
+  denom.tr <- numeric(n_train)
+  egy1.tr <- numeric(n_train)
+  egy1p.tr <- numeric(n_train)
+  egy2.tr <- numeric(n_train)
+  egy2p.tr <- numeric(n_train)
   
-  denom.te <- numeric(0.2 * nn)
-  egy1.te <- numeric(0.2 * nn)
-  egy1p.te <- numeric(0.2 * nn)
-  egy2.te <- numeric(0.2 * nn)
-  egy2p.te <- numeric(0.2 * nn)
+  denom.te <- numeric(n_test)
+  egy1.te <- numeric(n_test)
+  egy1p.te <- numeric(n_test)
+  egy2.te <- numeric(n_test)
+  egy2p.te <- numeric(n_test)
   
   # Compute expected log survival times for training set
-  for (j in seq_len(0.8 * nn)) {
+  for (j in seq_len(n_train)) {
     denom.tr[j] <- s.sm.tr[j, r.index.tr[j]] - s.sm.tr[j, l.index.tr[j]]
     v.index.tr <- max(l.index.tr[j], 2)
     w.index.tr <- min(r.index.tr[j], length(t) - 1)
@@ -70,7 +73,7 @@ L2BOOSTCUT <- function(dat_tr, dat_te, nn, ntree, tau, mmax = 1e5, tol = 1e-5) {
   }
   
   # Compute expected log survival times for test set
-  for (j in seq_len(0.2 * nn)) {
+  for (j in seq_len(n_test)) {
     denom.te[j] <- s.sm.te[j, r.index.te[j]] - s.sm.te[j, l.index.te[j]]
     v.index.te <- max(l.index.te[j], 2)
     w.index.te <- min(r.index.te[j], length(t) - 1)
@@ -87,7 +90,7 @@ L2BOOSTCUT <- function(dat_tr, dat_te, nn, ntree, tau, mmax = 1e5, tol = 1e-5) {
   }
   
   # Compute initial function estimates using smooth splines
-  h.ss <- hss(egy1.tr, rep(0, 0.8 * nn), x_tr)
+  h.ss <- hss(egy1.tr, rep(0, n_train), x_tr)
   f_tr <- 0.01 * predict(h.ss, x_tr)$y
   f_te <- 0.01 * predict(h.ss, x_te)$y
   
@@ -97,7 +100,7 @@ L2BOOSTCUT <- function(dat_tr, dat_te, nn, ntree, tau, mmax = 1e5, tol = 1e-5) {
   loss_tr <- append(loss_tr, cut_loss(egy2.tr, egy1.tr, f_tr))
   loss_te <- append(loss_te, cut_loss(egy2.te, egy1.te, f_te))
   
-  # Iteratively update function estimates using boosting
+  # Iteratively update function estimates
   for (j in seq_len(mmax)) {
     h.ss <- hss(egy1.tr, f_tr, x_tr)
     f1_tr <- f_tr + 0.01 * predict(h.ss, x_tr)$y

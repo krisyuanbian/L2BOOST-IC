@@ -8,6 +8,8 @@ Boosting has garnered significant interest across both machine learning and stat
 
 #### Code
 
+* The .R file **"install_packages.R"** contains the codes to install the necessary packages.
+
 * The .R file **"help_funcs.R"** contains help functions to simulate data.
 
 * The .R file **"L2BOOST-CUT.R"** contains the core function for the $L_2$Boost-CUT algorithm.
