@@ -4,7 +4,7 @@ Boosting has garnered significant interest across both machine learning and stat
 
 #### Reference
 
-**Yuan Bian**, Grace Y. Yi, and Wenqing He (2025), Boosting methods for interval censored data with regression and classification. In *Thirteenth International Conference on Learning Representations*.
+**Yuan Bian**, Grace Y. Yi, and Wenqing He (2025), Boosting methods for interval censored data with regression and classification. In *The 13th International Conference on Learning Representations*.
 
 #### Code
 
